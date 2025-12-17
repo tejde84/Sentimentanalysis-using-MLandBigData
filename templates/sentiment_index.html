@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🧠 Sentiment Analyzer Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      --positive-gradient: linear-gradient(135deg, #00b09b, #96c93d);
+      --negative-gradient: linear-gradient(135deg, #ff416c, #ff4b2b);
+      --neutral-gradient: linear-gradient(135deg, #8e9eab, #eef2f3);
+      --dark-bg: #0f1525;
+      --card-bg: #1a2036;
+      --card-border: rgba(255, 255, 255, 0.05);
+      --text-primary: #f0f0f0;
+      --text-secondary: #b0b7c3;
+    }
+    
+    body {
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      overflow-x: hidden;
+      padding: 20px 0;
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-gradient);
+      border-radius: 4px;
+    }
+    
+    .main-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .header-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: var(--primary-gradient);
+    }
+    
+    .title {
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 5px;
+    }
+    
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+    }
+    
+    /* Text Input Styling */
+    .input-container {
+      position: relative;
+      margin-bottom: 25px;
+    }
+    
+    .input-label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+    }
+    
+    .input-label i {
+      margin-right: 10px;
+      color: #6a11cb;
+    }
+    
+    .sentiment-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      border-radius: 15px;
+      padding: 18px;
+      resize: none;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    .sentiment-input:focus {
+      outline: none;
+      border-color: #6a11cb;
+      box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .input-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    /* Button Styling */
+    .analyze-btn {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      padding: 16px 40px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
+    }
+    
+    .analyze-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(106, 17, 203, 0.6);
+    }
+    
+    .analyze-btn:active {
+      transform: translateY(1px);
+    }
+    
+    .analyze-btn i {
+      margin-right: 10px;
+    }
+    
+    /* Result Card */
+    .result-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      padding: 30px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: none;
+      animation: fadeIn 0.8s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .result-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .sentiment-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+    
+    .positive-icon {
+      background: linear-gradient(135deg, rgba(0, 176, 155, 0.2), rgba(150, 201, 61, 0.2));
+      color: #00b09b;
+    }
+    
+    .negative-icon {
+      background: linear-gradient(135deg, rgba(255, 65, 108, 0.2), rgba(255, 75, 43, 0.2));
+      color: #ff416c;
+    }
+    
+    .neutral-icon {
+      background: linear-gradient(135deg, rgba(142, 158, 171, 0.2), rgba(238, 242, 243, 0.2));
+      color: #8e9eab;
+    }
+    
+    .sentiment-label {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .positive-label {
+      background: var(--positive-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .negative-label {
+      background: var(--negative-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .neutral-label {
+      background: var(--neutral-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Confidence Meter */
+    .confidence-container {
+      margin: 25px 0;
+    }
+    
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .confidence-meter {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .confidence-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1.5s ease-in-out;
+    }
+    
+    .positive-fill {
+      background: var(--positive-gradient);
+    }
+    
+    .negative-fill {
+      background: var(--negative-gradient);
+    }
+    
+    .neutral-fill {
+      background: var(--neutral-gradient);
+    }
+    
+    /* Stats */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 25px 0;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .positive-stat {
+      color: #00b09b;
+    }
+    
+    .negative-stat {
+      color: #ff416c;
+    }
+    
+    .neutral-stat {
+      color: #8e9eab;
+    }
+    
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    /* Keywords */
+    .keywords-container {
+      margin-top: 25px;
+    }
+    
+    .keyword {
+      display: inline-block;
+      background: rgba(106, 17, 203, 0.2);
+      color: #b17aff;
+      padding: 8px 16px;
+      border-radius: 50px;
+      margin: 5px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(106, 17, 203, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .keyword:hover {
+      background: rgba(106, 17, 203, 0.4);
+      transform: translateY(-2px);
+    }
+    
+    /* History */
+    .history-container {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      padding: 25px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .history-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+    
+    .history-title i {
+      margin-right: 10px;
+      color: #6a11cb;
+    }
+    
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-left: 4px solid #6a11cb;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(5px);
+    }
+    
+    .history-sentiment {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .history-positive {
+      background: rgba(0, 176, 155, 0.2);
+      color: #00b09b;
+    }
+    
+    .history-negative {
+      background: rgba(255, 65, 108, 0.2);
+      color: #ff416c;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-card, .result-card, .history-container {
+        padding: 20px;
+      }
+      
+      .sentiment-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+      
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <!-- Header Card -->
+    <div class="header-card animate__animated animate__fadeIn">
+      <h1 class="title">🧠 Sentiment Analyzer Pro</h1>
+      <p class="subtitle">AI-powered sentiment analysis with detailed insights and interactive visualization</p>
+      
+      <!-- Input Form -->
+      <form id="sentimentForm">
+        <div class="input-container">
+          <div class="input-label">
+            <i class="fas fa-comment-alt"></i>
+            <span>Enter text to analyze sentiment</span>
+          </div>
+          <textarea class="form-control sentiment-input" id="message" name="message" rows="5" placeholder="Type or paste your text here..."></textarea>
+          <div class="input-footer">
+            <span id="charCount">0 characters</span>
+            <span id="wordCount">0 words</span>
+          </div>
+        </div>
+        
+        <button type="submit" class="analyze-btn">
+          <i class="fas fa-brain"></i> Analyze Sentiment
+        </button>
+      </form>
+    </div>
+    
+    <!-- Results Card (Initially Hidden) -->
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <div class="sentiment-icon positive-icon" id="sentimentIcon">
+          <i class="fas fa-smile"></i>
+        </div>
+        <div>
+          <div class="sentiment-label positive-label" id="sentimentLabel">Positive</div>
+          <div class="text-secondary" id="sentimentSubtext">The text expresses positive sentiment</div>
+        </div>
+      </div>
+      
+      <!-- Confidence Meter -->
+      <div class="confidence-container">
+        <div class="confidence-label">
+          <span>Confidence Score</span>
+          <span id="confidenceValue">85%</span>
+        </div>
+        <div class="confidence-meter">
+          <div class="confidence-fill positive-fill" id="confidenceFill" style="width: 85%"></div>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-value positive-stat" id="wordCountResult">42</div>
+          <div class="stat-label">Words</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value neutral-stat" id="charCountResult">245</div>
+          <div class="stat-label">Characters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value positive-stat" id="uniqueTokensResult">38</div>
+          <div class="stat-label">Unique Tokens</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value negative-stat" id="sentimentScoreResult">0.78</div>
+          <div class="stat-label">Sentiment Score</div>
+        </div>
+      </div>
+      
+      <!-- Keywords -->
+      <div class="keywords-container">
+        <h6><i class="fas fa-key"></i> Top Keywords</h6>
+        <div id="keywordsList">
+          <span class="keyword">excellent</span>
+          <span class="keyword">happy</span>
+          <span class="keyword">great</span>
+          <span class="keyword">love</span>
+          <span class="keyword">wonderful</span>
+          <span class="keyword">amazing</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- History -->
+    <div class="history-container">
+      <h5 class="history-title">
+        <i class="fas fa-history"></i> Analysis History
+      </h5>
+      <div id="historyList">
+        <!-- History items will be added here by JavaScript -->
+        <div class="history-item">
+          <span class="history-sentiment history-positive">Positive (92%)</span>
+          <p class="mb-1">This product is absolutely amazing! I love how it works and the quality is outstanding.</p>
+          <small class="text-secondary">Words: 12 | Chars: 78 | Score: 0.91</small>
+        </div>
+        <div class="history-item">
+          <span class="history-sentiment history-negative">Negative (76%)</span>
+          <p class="mb-1">I'm very disappointed with the service. The delivery was late and the product was damaged.</p>
+          <small class="text-secondary">Words: 14 | Chars: 85 | Score: -0.68</small>
+        </div>
+        <div class="history-item">
+          <span class="history-sentiment history-positive">Positive (85%)</span>
+          <p class="mb-1">The team did a fantastic job on this project. Highly recommended for anyone looking for quality work.</p>
+          <small class="text-secondary">Words: 16 | Chars: 94 | Score: 0.79</small>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <p>Sentiment Analyzer Pro | Powered by AI | <a href="#" class="text-decoration-none" style="color: #b17aff;">About Project</a></p>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // DOM Elements
+    const sentimentForm = document.getElementById('sentimentForm');
+    const messageInput = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    const wordCount = document.getElementById('wordCount');
+    const resultCard = document.getElementById('resultCard');
+    const sentimentIcon = document.getElementById('sentimentIcon');
+    const sentimentLabel = document.getElementById('sentimentLabel');
+    const sentimentSubtext = document.getElementById('sentimentSubtext');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const wordCountResult = document.getElementById('wordCountResult');
+    const charCountResult = document.getElementById('charCountResult');
+    const uniqueTokensResult = document.getElementById('uniqueTokensResult');
+    const sentimentScoreResult = document.getElementById('sentimentScoreResult');
+    const keywordsList = document.getElementById('keywordsList');
+    const historyList = document.getElementById('historyList');
+    
+    // Update character and word count in real-time
+    messageInput.addEventListener('input', function() {
+      const text = this.value;
+      const chars = text.length;
+      const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+      
+      charCount.textContent = `${chars} characters`;
+      wordCount.textContent = `${words} words`;
+    });
+    
+    // Handle form submission
+    sentimentForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const message = messageInput.value.trim();
+      
+      if (!message) {
+        showError("Please enter some text to analyze.");
+        return;
+      }
+      
+      // Show loading state
+      const analyzeBtn = document.querySelector('.analyze-btn');
+      const originalBtnText = analyzeBtn.innerHTML;
+      analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+      analyzeBtn.disabled = true;
+      
+      // Simulate API call with timeout
+      setTimeout(() => {
+        // Analyze sentiment (in a real app, this would be a server call)
+        const analysisResult = analyzeSentiment(message);
+        
+        // Update UI with results
+        updateResultUI(analysisResult);
+        
+        // Add to history
+        addToHistory(message, analysisResult);
+        
+        // Reset button
+        analyzeBtn.innerHTML = originalBtnText;
+        analyzeBtn.disabled = false;
+      }, 1500);
+    });
+    
+    // Function to analyze sentiment (mock implementation)
+    function analyzeSentiment(text) {
+      // Mock analysis - in a real app, this would call an API
+      const words = text.trim().split(/\s+/).length;
+      const chars = text.length;
+      const uniqueTokens = new Set(text.toLowerCase().split(/\W+/)).size;
+      
+      // Determine sentiment based on keywords
+      const positiveWords = ['good', 'great', 'excellent', 'awesome', 'happy', 'love', 'best', 'fantastic', 'amazing', 'wonderful'];
+      const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'worst', 'disappointed', 'poor', 'failure', 'horrible', 'sad'];
+      
+      let positiveCount = 0;
+      let negativeCount = 0;
+      
+      const textWords = text.toLowerCase().split(/\W+/);
+      textWords.forEach(word => {
+        if (positiveWords.includes(word)) positiveCount++;
+        if (negativeWords.includes(word)) negativeCount++;
+      });
+      
+      // Calculate sentiment score
+      const totalKeywords = positiveCount + negativeCount;
+      let sentimentScore = 0;
+      let sentiment = 'neutral';
+      let confidence = 70;
+      
+      if (totalKeywords > 0) {
+        sentimentScore = (positiveCount - negativeCount) / totalKeywords;
+        
+        if (sentimentScore > 0.2) {
+          sentiment = 'positive';
+          confidence = Math.min(95, 70 + (sentimentScore * 20));
+        } else if (sentimentScore < -0.2) {
+          sentiment = 'negative';
+          confidence = Math.min(95, 70 + (Math.abs(sentimentScore) * 20));
+        } else {
+          sentiment = 'neutral';
+        }
+      }
+      
+      // Extract keywords (top 6 most frequent words)
+      const wordFreq = {};
+      textWords.forEach(word => {
+        if (word.length > 3) {
+          wordFreq[word] = (wordFreq[word] || 0) + 1;
+        }
+      });
+      
+      const sortedKeywords = Object.keys(wordFreq)
+        .sort((a, b) => wordFreq[b] - wordFreq[a])
+        .slice(0, 6);
+      
+      return {
+        sentiment,
+        confidence: Math.round(confidence),
+        words,
+        chars,
+        uniqueTokens,
+        sentimentScore: sentimentScore.toFixed(2),
+        keywords: sortedKeywords.length > 0 ? sortedKeywords : ['analysis', 'text', 'sentiment', 'content', 'words', 'language']
+      };
+    }
+    
+    // Function to update the result UI
+    function updateResultUI(result) {
+      // Update sentiment display
+      sentimentLabel.textContent = result.sentiment.charAt(0).toUpperCase() + result.sentiment.slice(1);
+      sentimentLabel.className = `sentiment-label ${result.sentiment}-label`;
+      
+      // Update icon and color
+      sentimentIcon.className = `sentiment-icon ${result.sentiment}-icon`;
+      sentimentIcon.innerHTML = result.sentiment === 'positive' 
+        ? '<i class="fas fa-smile"></i>' 
+        : result.sentiment === 'negative' 
+        ? '<i class="fas fa-frown"></i>' 
+        : '<i class="fas fa-meh"></i>';
+      
+      // Update subtext
+      const subtexts = {
+        positive: "The text expresses positive sentiment with optimistic language",
+        negative: "The text expresses negative sentiment with critical language",
+        neutral: "The text is neutral or mixed in sentiment"
+      };
+      sentimentSubtext.textContent = subtexts[result.sentiment];
+      
+      // Update confidence
+      confidenceValue.textContent = `${result.confidence}%`;
+      confidenceFill.className = `confidence-fill ${result.sentiment}-fill`;
+      confidenceFill.style.width = `${result.confidence}%`;
+      
+      // Update stats
+      wordCountResult.textContent = result.words;
+      charCountResult.textContent = result.chars;
+      uniqueTokensResult.textContent = result.uniqueTokens;
+      sentimentScoreResult.textContent = result.sentimentScore;
+      
+      // Update color classes for stats
+      wordCountResult.className = `stat-value ${result.sentiment}-stat`;
+      charCountResult.className = `stat-value neutral-stat`;
+      uniqueTokensResult.className = `stat-value ${result.sentiment}-stat`;
+      sentimentScoreResult.className = `stat-value ${result.sentiment}-stat`;
+      
+      // Update keywords
+      keywordsList.innerHTML = '';
+      result.keywords.forEach(keyword => {
+        const keywordEl = document.createElement('span');
+        keywordEl.className = 'keyword';
+        keywordEl.textContent = keyword;
+        keywordsList.appendChild(keywordEl);
+      });
+      
+      // Show result card with animation
+      resultCard.style.display = 'block';
+      resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Function to add analysis to history
+    function addToHistory(message, result) {
+      // Create history item
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      
+      // Truncate message for display
+      const displayMessage = message.length > 100 ? message.substring(0, 100) + '...' : message;
+      
+      historyItem.innerHTML = `
+        <span class="history-sentiment history-${result.sentiment}">
+          ${result.sentiment.charAt(0).toUpperCase() + result.sentiment.slice(1)} (${result.confidence}%)
+        </span>
+        <p class="mb-1">${displayMessage}</p>
+        <small class="text-secondary">Words: ${result.words} | Chars: ${result.chars} | Score: ${result.sentimentScore}</small>
+      `;
+      
+      // Add click event to load this analysis
+      historyItem.addEventListener('click', function() {
+        messageInput.value = message;
+        messageInput.dispatchEvent(new Event('input'));
+        updateResultUI(result);
+      });
+      
+      // Add to top of history
+      historyList.insertBefore(historyItem, historyList.firstChild);
+      
+      // Limit history to 10 items
+      if (historyList.children.length > 10) {
+        historyList.removeChild(historyList.lastChild);
+      }
+    }
+    
+    // Function to show error message
+    function showError(message) {
+      // Create error alert
+      const errorAlert = document.createElement('div');
+      errorAlert.className = 'alert alert-danger animate__animated animate__shakeX';
+      errorAlert.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        max-width: 300px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: white;
+        border: none;
+        box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+      `;
+      errorAlert.innerHTML = `
+        <div class="d-flex align-items-center">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          <div>${message}</div>
+        </div>
+      `;
+      
+      document.body.appendChild(errorAlert);
+      
+      // Remove after 5 seconds
+      setTimeout(() => {
+        errorAlert.remove();
+      }, 5000);
+    }
+    
+    // Initialize with sample text
+    window.addEventListener('DOMContentLoaded', function() {
+      // Set sample text
+      const sampleText = "This product is absolutely amazing! I love how it works and the quality is outstanding. The customer service was also fantastic. Highly recommended!";
+      messageInput.value = sampleText;
+      messageInput.dispatchEvent(new Event('input'));
+    });
+  </script>
+</body>
+</html>
